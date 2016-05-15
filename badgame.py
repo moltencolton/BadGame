@@ -1,4 +1,7 @@
 #Running code in linux comandline: python2 badgame.py
+''' 1: git add badgame.py  
+    2: git commit -m "message" 
+    3: git push origin master'''
 import pygame
 
 pygame.init()
@@ -6,8 +9,24 @@ pygame.init()
 white = (255,255,255)
 black = (0  ,0  ,0  )
 red   = (255,0  ,0  )
- 
- 
+tan   = (234,197,146)
+
+def drawRoom():
+	gameDisplay.fill(white)
+	pygame.draw.rect(gameDisplay, tan, [50,50,700, 500])
+
+def drawLead(lead_x, lead_y):
+	
+	pygame.draw.rect(gameDisplay, red, [lead_x,lead_y,10, 40]) #(x,y,with,hight)
+	pygame.draw.rect(gameDisplay, red, [lead_x + 10 ,lead_y + 40,20,20 ])
+	pygame.draw.rect(gameDisplay, red, [lead_x - 20 ,lead_y + 40,20,20 ]) 
+	
+def checkCollision(lead_x,lead_x_change, lead_y,lead_y_change):
+	lead_x += lead_x_change
+	lead_y += lead_y_change
+	if lead_x >= 750-30 or lead_x <= 50 + 20:
+		return True
+	return False
  
 gameDisplay = pygame.display.set_mode((800,600))
 pygame.display.set_caption('pygamegame')
@@ -68,14 +87,21 @@ while not gameExit:
 				movDown = False
 				if movUp == True:
 					lead_y_change = -10
-			
-			
-	lead_x += lead_x_change
-	lead_y += lead_y_change
-	gameDisplay.fill(white)
-	pygame.draw.rect(gameDisplay, red, [lead_x,lead_y,10, 40]) #(x,y,with,hight)
-	pygame.draw.rect(gameDisplay, red, [lead_x + 10 ,lead_y + 40,20,20 ])
-	pygame.draw.rect(gameDisplay, red, [lead_x - 20 ,lead_y + 40,20,20 ])
+	
+	
+	
+	collide = False		
+	collide = checkCollision(lead_x,lead_x_change, lead_y,lead_y_change)
+	drawRoom()
+	
+	
+	if collide == False:
+		lead_x += lead_x_change
+		lead_y += lead_y_change
+		drawLead(lead_x, lead_y)
+	if collide == True:
+		drawLead(lead_x, lead_y)
+	
 	
 	pygame.display.update()
 	clock.tick(30)
