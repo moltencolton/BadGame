@@ -24,10 +24,15 @@ tan   = (234,197,146)
 FLOOR_LIST = [50,50,700,500]
 CHAR_BUFFER = 5
 WALL_BUFFER = FLOOR_LIST[0]
-WALKING_SPEED = 10
+WALKING_SPEED = 8
 FLOOR_HIGHT = FLOOR_LIST[3]
 FLOOR_WITH  = FLOOR_LIST[2]
 
+class Lead:
+	x = 300
+	y = 300
+	x_change = 0
+	y_change = 0
 
 class Create_Room_Sprite(pygame.sprite.Sprite):
     def __init__(self, image_file, location, doorPosition, link):
@@ -51,8 +56,10 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 	object.doorLink returns what object (room) the stairs link to 
 '''
 
-def roomChange(lead_x, lead_y, current_Room):
-	if lead_x >= current_Room.door[0] and lead_x <= (current_Room.door[0] + current_Room.door[2]) and lead_y >= current_Room.door[1] and lead_y <= (current_Room.door[1] + current_Room.door[2]):
+def roomChange(lead, current_Room):
+	if lead.x >= current_Room.door[0] and lead.x <= (current_Room.door[0] + current_Room.door[2]) and lead.y >= current_Room.door[1] and lead.y <= (current_Room.door[1] + current_Room.door[2]):
+		lead.x = 300
+		lead.y = 300
 		return current_Room.doorLink
 	return current_Room
 '''
@@ -71,25 +78,25 @@ def drawRoom(current_Room):
 	Does not need much explanation, function draws the room for 
 	the "current_Room" that is passed into it. unsing calls to the class
 '''
-def drawLead(lead_x, lead_y):
-	pygame.draw.circle(gameDisplay,red, [lead_x, lead_y] , CHAR_BUFFER * 2, 0)
+def drawLead(lead):
+	pygame.draw.circle(gameDisplay,red, [lead.x, lead.y] , CHAR_BUFFER * 2, 0)
 	
 '''	
 	OLD SPRITE, I drew a new one quickly so I could show this in public
-	pygame.draw.rect(gameDisplay, red, [lead_x,lead_y,10, 40]) #(x,y,with,hight)
-	pygame.draw.rect(gameDisplay, red, [lead_x + 10 ,lead_y + 40,20,20 ])
-	pygame.draw.rect(gameDisplay, red, [lead_x - 20 ,lead_y + 40,20,20 ]) 
+	pygame.draw.rect(gameDisplay, red, [lead.x,lead.y,10, 40]) #(x,y,with,hight)
+	pygame.draw.rect(gameDisplay, red, [lead.x + 10 ,lead.y + 40,20,20 ])
+	pygame.draw.rect(gameDisplay, red, [lead.x - 20 ,lead.y + 40,20,20 ]) 
 	
 '''
 
-def wallCollision(lead_x,lead_x_change, lead_y,lead_y_change):
-	lead_x += lead_x_change
-	lead_y += lead_y_change
-	if lead_x >= current_Room.door[0] and lead_x <= (current_Room.door[0] + current_Room.door[2]) and lead_y >= current_Room.door[1] and lead_y <= (current_Room.door[1] + current_Room.door[2]):
+def wallCollision(lead):
+	lead.x += lead.x_change
+	lead.y += lead.y_change
+	if lead.x >= current_Room.door[0] and lead.x <= (current_Room.door[0] + current_Room.door[2]) and lead.y >= current_Room.door[1] and lead.y <= (current_Room.door[1] + current_Room.door[2]):
 		return False
-	if lead_x >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead_x <= (WALL_BUFFER + CHAR_BUFFER): 
+	if lead.x >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x <= (WALL_BUFFER + CHAR_BUFFER): 
 		return True
-	if lead_y >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead_y <= (WALL_BUFFER + CHAR_BUFFER):
+	if lead.y >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead.y <= (WALL_BUFFER + CHAR_BUFFER):
 		return True
 	return False
 	
@@ -102,6 +109,7 @@ pygame.display.set_caption('pygamegame')
 
 gameExit = False
 
+lead = Lead
 RoomEnd    = Create_Room_Sprite('wall16-800.jpg',[0,0], [0,0,0,0], False)
 Room2_Wall = Create_Room_Sprite('green_crazy_circle-800x600.jpg', [0,0], [150,150,60,60], RoomEnd)
 Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0], [0,450,50,60], Room2_Wall)
@@ -113,10 +121,10 @@ Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0], [0,450,50,60], Ro
 		Create_Room_Sprite('link to image' [0,0], [x,y,with,hight] for stairs, what room stairs lead)
 '''
 
-lead_x = 300
-lead_y = 300
-lead_x_change = 0
-lead_y_change = 0
+lead.x = 300
+lead.y = 300
+lead.x_change = 0
+lead.y_change = 0
 movLeft = False
 movRight = False
 movUp = False
@@ -134,52 +142,54 @@ while not gameExit:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_LEFT:
 				movLeft = True
-				lead_x_change =  -WALKING_SPEED
+				lead.x_change =  -WALKING_SPEED
 			if event.key == pygame.K_RIGHT:
 				movRight = True
-				lead_x_change = WALKING_SPEED
+				lead.x_change = WALKING_SPEED
 			if event.key == pygame.K_UP:
 				movUp = True
-				lead_y_change =  -WALKING_SPEED
+				lead.y_change =  -WALKING_SPEED
 			if event.key == pygame.K_DOWN:
 				movDown = True
-				lead_y_change = WALKING_SPEED  
+				lead.y_change = WALKING_SPEED  
 		
 		if event.type == pygame.KEYUP:
 			if event.key == pygame.K_LEFT:  
-				lead_x_change = 0
+				lead.x_change = 0
 				movLeft = False
 				if movRight == True:
-					lead_x_change = WALKING_SPEED
+					lead.x_change = WALKING_SPEED
 					
 			if event.key == pygame.K_RIGHT:
-				lead_x_change = 0
+				lead.x_change = 0
 				movRight = False
 				if movLeft == True:
-					lead_x_change = -WALKING_SPEED
+					lead.x_change = -WALKING_SPEED
 			
 			if event.key == pygame.K_UP:  
-				lead_y_change = 0
+				lead.y_change = 0
 				movUp = False
 				if movDown == True:
-					lead_y_change = WALKING_SPEED
+					lead.y_change = WALKING_SPEED
 					
 			if event.key == pygame.K_DOWN:
-				lead_y_change = 0
+				lead.y_change = 0
 				movDown = False
 				if movUp == True:
-					lead_y_change = -WALKING_SPEED
+					lead.y_change = -WALKING_SPEED
 		
 		
-	collide = wallCollision(lead_x,lead_x_change, lead_y,lead_y_change)
-	current_Room = roomChange(lead_x,lead_y, current_Room)
+	collide = wallCollision(lead)
+	current_Room = roomChange(lead, current_Room)
 	
 	if collide == False:
-		lead_x += lead_x_change
-		lead_y += lead_y_change
-		drawLead(lead_x, lead_y)
+		lead.x += lead.x_change
+		lead.y += lead.y_change
+		drawLead(lead)
 	if collide == True:
-		drawLead(lead_x, lead_y)
+		lead.x -= lead.x_change
+		lead.y -= lead.y_change
+		drawLead(lead)
 	
 	
 	pygame.display.update()
