@@ -10,6 +10,7 @@
 	2: Fixing how the class is written. the class is not created properly to 
 	   store all the information it does
 	3: Create real sprites for lead charicter and floor/objects
+	4: Make a Way to add more then one door in a room, this is a tough one!
 '''
 
 import pygame
