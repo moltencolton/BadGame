@@ -103,9 +103,9 @@ def enemyCollision(lead, current_Room):
 			return current_Room
 	return current_Room
 '''
-	This function checks to see if the player is touching the stairs,
-	if the player is within the boundary of the stairs, it returns the
-	room that that stair leads too, if not, it returns the same room as
+	This function checks to see if the player is touching an enemy,
+	if the player is within the boundary of the enemy, it returns the
+	room the original room and resets player position, if not, it returns the same room as
 	was passed in.
 	This for loop then cicles through all of the stairs making sure that
 	the player can use all of them.
