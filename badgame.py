@@ -12,8 +12,7 @@
 	2: Create a way to have multipal doors in the same room linking to diffrent
 	   places
 	3: Create real sprites for lead charicter and floor/objects
-	4: Working on making multipal stairs on a floor [0-4], there is some 
-	   ground work for it but there still can only be one set. 
+	4: Creating a goal for the game, items, enamies, and other objects
 	
 '''
 
@@ -54,9 +53,11 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 	        self.rect = self.image.get_rect()
 	        self.rect.left, self.rect.top = location
 		self.doors = []
+		self.links = []
 	def addStairs(self, doorPositions, link):
 		if link != False:
-			self.doors = [doorPositions, link]
+			self.doors.append(doorPositions)
+			self.links.append(link)
 		
 '''
 	this class was origanlly used just for creating and returning the room
@@ -69,27 +70,32 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 	room class, this is not working however and needs to be addressed,
 	the function is called by currnetRoom.addStairs([array of door pos], room link)
 	the array or doors pos is given in [x,y,whith,hight]
+	len()
 	
 '''
 
 def roomChange(lead, current_Room):
-	if lead.x >= current_Room.doors[0][0] and lead.x <= (current_Room.doors[0][0] + current_Room.doors[0][2]) and lead.y >= current_Room.doors[0][1] and lead.y <= (current_Room.doors[0][1] + current_Room.doors[0][2]):
-		lead.x = 300
-		lead.y = 300
-		return current_Room.doors[1]
+	for i in range(0, len(current_Room.doors)):
+		if lead.x >= current_Room.doors[i][0] and lead.x <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y >= current_Room.doors[i][1] and lead.y <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
+			lead.x = 300
+			lead.y = 300
+			return current_Room.links[i]
 	return current_Room
 '''
 	This function checks to see if the player is touching the stairs, 
 	if the player is within the boundary of the stairs, it returns the 
 	room that that stair leads too, if not, it returns the same room as
-	was passed in
+	was passed in.
+	This for loop then cicles through all of the stairs making sure that 
+	the player can use all of them.
 '''
 	
 def drawRoom(current_Room):
 	gameDisplay.fill(white)
 	gameDisplay.blit(current_Room.image, current_Room.rect)
 	pygame.draw.rect(gameDisplay, tan, FLOOR_LIST)
-	pygame.draw.rect(gameDisplay, black, current_Room.doors[0])
+	for i in range(0, len(current_Room.doors)):
+		pygame.draw.rect(gameDisplay, black, current_Room.doors[i])
 '''
 	Does not need much explanation, function draws the room for 
 	the "current_Room" that is passed into it. unsing calls to the class
@@ -108,10 +114,11 @@ def drawLead(lead):
 def wallCollision(lead):
 	lead.x_predict = lead.x + lead.x_change
 	lead.y_predict = lead.y + lead.y_change
-	if lead.x_predict >= current_Room.doors[0][0] and lead.x_predict <= (current_Room.doors[0][0] + current_Room.doors[0][2]) and lead.y_predict >= current_Room.doors[0][1] and lead.y_predict <= (current_Room.doors[0][1] + current_Room.doors[0][2]):
-		lead.x += lead.x_change
-		lead.y += lead.y_change
-		return False
+	for i in range(0, len(current_Room.doors)):
+		if lead.x_predict >= current_Room.doors[i][0] and lead.x_predict <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y_predict >= current_Room.doors[i][1] and lead.y_predict <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
+			#lead.x += lead.x_change
+			#lead.y += lead.y_change
+			return False
 	if lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER): 
 		return True
 	if lead.y_predict >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead.y_predict <= (WALL_BUFFER + CHAR_BUFFER):
@@ -123,9 +130,10 @@ def wallCollision(lead):
 	changed to adapt to exempt hitting the wall if a door was placed on that
 	wall, also a lead.x and y predicted was added to look ahead a frame without
 	adding lead_change to the movement yet. 
+	the for loop is added to check all of the doors in the room.
 '''
  
-gameDisplay = pygame.display.set_mode((800,600)) '''DO NOT CHANGE THIS NUMBER!!!'''
+gameDisplay = pygame.display.set_mode((800,600)) 
 pygame.display.set_caption('pygamegame')
 
 gameExit = False
@@ -136,7 +144,8 @@ Room2_Wall = Create_Room_Sprite('green_crazy_circle-800x600.jpg', [0,0], [150,15
 Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0], [0,450,50,60], Room2_Wall)
 Room1_Wall.addStairs([500,200,60,60], Room2_Wall)
 RoomEnd.addStairs([250,100,60,60],Room1_Wall)
-Room2_Wall.addStairs([0,450,50,60], RoomEnd)
+Room2_Wall.addStairs([0,450,50,70], RoomEnd)
+Room2_Wall.addStairs([400,450,60,60], RoomEnd)
 
 '''	This is just a test image that is passed to the class
 	Background before real art can be made for the walls and such.
