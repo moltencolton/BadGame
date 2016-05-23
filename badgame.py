@@ -62,7 +62,7 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 			self.links.append(link)
     	def addEnemy(self, doorPositions, kind):
         	 while link != False:
-			self.doors.append(enemyPositions)	
+			self.doors.append(enemyPositions)
 			self.enemyType.append(kind)
 '''
 	this class was origanlly used just for creating and returning the room
@@ -137,12 +137,14 @@ def wallCollision(lead):
 	lead.y_predict = lead.y + lead.y_change
 	for i in range(0, len(current_Room.doors)):
 		if lead.x_predict >= current_Room.doors[i][0] and lead.x_predict <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y_predict >= current_Room.doors[i][1] and lead.y_predict <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
-			return False
-	if lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER):
-		return True
+			return 0
+	if (lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER)) and (lead.y_predict >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead.y_predict <= (WALL_BUFFER + CHAR_BUFFER)):
+		return 1
+        if lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER):
+            	return 2
 	if lead.y_predict >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead.y_predict <= (WALL_BUFFER + CHAR_BUFFER):
-		return True
-	return False
+		return 3
+	return 0
 
 '''
 	This check wall function was our check colision function, but had to be
@@ -231,14 +233,18 @@ while not gameExit:
 	collide = wallCollision(lead)
 	current_Room = roomChange(lead, current_Room)
 
-	if collide == False:
+	if collide == 0:
 		lead.x += lead.x_change
 		lead.y += lead.y_change
 		drawLead(lead)
-	if collide == True:
+	if collide == 1:
 		drawLead(lead)
-
-
+    	if collide == 2:
+        	lead.y += lead.y_change
+        	drawLead(lead)
+    	if collide == 3:
+        	lead.x += lead.x_change
+        	drawLead(lead)
 	pygame.display.update()
 	clock.tick(30)
 pygame.quit()
