@@ -13,6 +13,8 @@
 	   places
 	3: Create real sprites for lead charicter and floor/objects
 	4: Creating a goal for the game, items, enamies, and other objects
+	5: Charicter movement needs to be smothed out
+	6: Find way to shrink if statements
 
 '''
 
@@ -49,9 +51,9 @@ class Lead:
 class Create_Room_Sprite(pygame.sprite.Sprite):
 	def __init__(self, image_file, location):
 	        pygame.sprite.Sprite.__init__(self)  #call Sprite initializer
-	        self.image = pygame.image.load(image_file)
-	        self.rect = self.image.get_rect()
-	        self.rect.left, self.rect.top = location
+		self.image = pygame.image.load(image_file)
+		self.rect = self.image.get_rect()
+		self.rect.left, self.rect.top = location
 		self.doors = []
 		self.links = []
 		self.enemies = []
@@ -60,11 +62,12 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 		if link != False:
 			self.doors.append(doorPositions)
 			self.links.append(link)
-    	def addEnemy(self, doorPositions, kind):
-        	 while link != False:
-			self.doors.append(enemyPositions)
-			self.enemyType.append(kind)
+    	def addEnemy(self, enemyPositions, kind):
+		self.enemies.append(enemyPositions)	
+		self.enemyType.append(kind)
 '''
+	enemyKind[0] = [color, type, size]
+	
 	this class was origanlly used just for creating and returning the room
 	image after being correctly processed how java wants it.
 	although this also became a great place to store elements of each room
@@ -97,7 +100,7 @@ def roomChange(lead, current_Room):
 
 def enemyCollision(lead, current_Room):
 	for i in range(0, len(current_Room.enemies)):
-		if lead.x >= current_Room.enemies[i][0] and lead.x <= (current_Room.enemies[i][0] + current_Room.enemies[i][2]) and lead.y >= current_Room.enemies[i][1] and lead.y <= (current_Room.enemies[i][1] + current_Room.enemies[i][2]):
+		if lead.x >= (current_Room.enemies[i][0] - current_Room.enemyType[i][2]) and lead.x <= (current_Room.enemies[i][0] + current_Room.enemyType[i][2]) and lead.y >= (current_Room.enemies[i][1] - current_Room.enemyType[i][2]) and lead.y <= (current_Room.enemies[i][1] + current_Room.enemyType[i][2]):
 			lead.x = 300
 			lead.y = 300
 			return current_Room
@@ -115,8 +118,10 @@ def drawRoom(current_Room):
 	gameDisplay.fill(white)
 	gameDisplay.blit(current_Room.image, current_Room.rect)
 	pygame.draw.rect(gameDisplay, tan, FLOOR_LIST)
-	for i in range(0, len(current_Room.doors)):
-		pygame.draw.rect(gameDisplay, black, current_Room.doors[i])
+	for x in range(0, len(current_Room.doors)):
+		pygame.draw.rect(gameDisplay, black, current_Room.doors[x])
+	drawEnemy(current_Room)
+
 '''
 	Does not need much explanation, function draws the room for
 	the "current_Room" that is passed into it. unsing calls to the class
@@ -131,6 +136,9 @@ def drawLead(lead):
 	pygame.draw.rect(gameDisplay, red, [lead.x - 20 ,lead.y + 40,20,20 ])
 
 '''
+def drawEnemy(current_Room):
+	for i in range(0, len(current_Room.enemies)):
+		pygame.draw.circle(gameDisplay,current_Room.enemyType[i][0], [current_Room.enemies[i][0], current_Room.enemies[i][1]] , current_Room.enemyType[i][2], 0)
 
 def wallCollision(lead):
 	lead.x_predict = lead.x + lead.x_change
@@ -167,6 +175,7 @@ Room1_Wall.addStairs([500,200,60,60], Room2_Wall)
 RoomEnd.addStairs([250,100,60,60],Room1_Wall)
 Room2_Wall.addStairs([0,450,50,70], RoomEnd)
 Room2_Wall.addStairs([400,450,60,60], RoomEnd)
+Room1_Wall.addEnemy([200,200], [white, 1, 30])
 
 '''	This is just a test image that is passed to the class
 	Background before real art can be made for the walls and such.
@@ -232,7 +241,8 @@ while not gameExit:
 
 	collide = wallCollision(lead)
 	current_Room = roomChange(lead, current_Room)
-
+	enemyCollision(lead, current_Room)
+	
 	if collide == 0:
 		lead.x += lead.x_change
 		lead.y += lead.y_change
@@ -245,6 +255,8 @@ while not gameExit:
     	if collide == 3:
         	lead.x += lead.x_change
         	drawLead(lead)
+
+
 	pygame.display.update()
 	clock.tick(30)
 pygame.quit()
