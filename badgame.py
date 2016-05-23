@@ -47,7 +47,7 @@ class Lead:
 
 
 class Create_Room_Sprite(pygame.sprite.Sprite):
-	def __init__(self, image_file, location, Position, blink):
+	def __init__(self, image_file, location):
 	        pygame.sprite.Sprite.__init__(self)  #call Sprite initializer
 	        self.image = pygame.image.load(image_file)
 	        self.rect = self.image.get_rect()
@@ -55,15 +55,15 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 		self.doors = []
 		self.links = []
 		self.enemies = []
+		self.enemyType = []
 	def addStairs(self, doorPositions, link):
 		if link != False:
 			self.doors.append(doorPositions)
 			self.links.append(link)
-    def addEnemy(self, doorPositions, link):
-         while link != False:
-			self.doors.append(enemyPositions)
-			self.links.append(link)
-
+    	def addEnemy(self, doorPositions, kind):
+        	 while link != False:
+			self.doors.append(enemyPositions)	
+			self.enemyType.append(kind)
 '''
 	this class was origanlly used just for creating and returning the room
 	image after being correctly processed how java wants it.
@@ -96,7 +96,7 @@ def roomChange(lead, current_Room):
 '''
 
 def enemyCollision(lead, current_Room):
-	for i in range(0, len(current_Room.doors)):
+	for i in range(0, len(current_Room.enemies)):
 		if lead.x >= current_Room.enemies[i][0] and lead.x <= (current_Room.enemies[i][0] + current_Room.enemies[i][2]) and lead.y >= current_Room.enemies[i][1] and lead.y <= (current_Room.enemies[i][1] + current_Room.enemies[i][2]):
 			lead.x = 300
 			lead.y = 300
@@ -137,8 +137,6 @@ def wallCollision(lead):
 	lead.y_predict = lead.y + lead.y_change
 	for i in range(0, len(current_Room.doors)):
 		if lead.x_predict >= current_Room.doors[i][0] and lead.x_predict <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y_predict >= current_Room.doors[i][1] and lead.y_predict <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
-			#lead.x += lead.x_change
-			#lead.y += lead.y_change
 			return False
 	if lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER):
 		return True
@@ -160,9 +158,9 @@ pygame.display.set_caption('pygamegame')
 gameExit = False
 
 lead = Lead
-RoomEnd    = Create_Room_Sprite('wall16-800.jpg',[0,0], [0,0,0,0], False)
-Room2_Wall = Create_Room_Sprite('green_crazy_circle-800x600.jpg', [0,0], [150,150,60,60], RoomEnd)
-Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0], [0,450,50,60], Room2_Wall)
+RoomEnd    = Create_Room_Sprite('wall16-800.jpg',[0,0])
+Room2_Wall = Create_Room_Sprite('green_crazy_circle-800x600.jpg', [0,0])
+Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0])
 Room1_Wall.addStairs([500,200,60,60], Room2_Wall)
 RoomEnd.addStairs([250,100,60,60],Room1_Wall)
 Room2_Wall.addStairs([0,450,50,70], RoomEnd)
