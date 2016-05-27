@@ -44,7 +44,7 @@ class Lead:
 	damage = 10
 	weapon_width = 25
 	weapon_hight = 5
-	weapon_enabled = False
+	weapon_enabled = True
 	
 '''
 	This is the Class that had to be created for Lead, instead
@@ -106,11 +106,12 @@ def roomChange(lead, current_Room):
 def enemyCollision(lead, current_Room):
 	for i in range(0, len(current_Room.enemies)):
 		if lead.x >= (current_Room.enemies[i][0] - current_Room.enemyType[i][2]) and lead.x <= (current_Room.enemies[i][0] + current_Room.enemyType[i][2]) and lead.y >= (current_Room.enemies[i][1] - current_Room.enemyType[i][2]) and lead.y <= (current_Room.enemies[i][1] + current_Room.enemyType[i][2]):
-			lead.x = 300
-			lead.y = 300
-			lead.health -= 10
-			if lead.health <= 0:
-				return RoomEnd
+			if current_Room.enemyType[i][3] > 0:
+				lead.x = 300
+				lead.y = 300
+				lead.health -= 10
+				if lead.health <= 0:
+					return RoomEnd
 			return current_Room
 		if lead.weapon_enabled == True:
 			if (lead.x + lead.weapon_width) >= (current_Room.enemies[i][0] - current_Room.enemyType[i][2]) and (lead.x + lead.weapon_width) <= (current_Room.enemies[i][0] + current_Room.enemyType[i][2]) and (lead.y + lead.weapon_hight) >= (current_Room.enemies[i][1] - current_Room.enemyType[i][2]) and (lead.y + lead.weapon_hight) <= (current_Room.enemies[i][1] + current_Room.enemyType[i][2]):	
