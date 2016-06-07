@@ -9,12 +9,18 @@
 '''
 	MAIN NOTES! LIST OF THINGS THAT NEED TO BE DONE
 	1: Code needs to start to be broken up into diffrent files for organization
-	2: Create real sprites for lead charicter and floor/objects
+	2: Create real sprites for lead charicter and floor/objects (Work being done on this)
+	3: ONE MAJOR CHECK COLLISION FUNCTION THAT CAN TAKE PARAMITERS OR OBJECTS AND CHECK COLLISION T/F
+	4: Collect all sprite images into one big image (like minecraft texture packs)
 	3: Creating a goal for the game, items, enamies, and other objects
 	4: Find way to shrink if statements
-	5: Weapon enabled and disabled needs to be finished, key does not toggle true or false
 '''
-
+''' 
+	HOW TO PLAY!
+	wasd for movement
+	space to swing weapon
+	i to open your bag
+'''
 import pygame, sys
 from pygame.locals import *
 pygame.init()
@@ -25,6 +31,7 @@ red   = (255,0  ,0  )
 tan   = (234,197,146)
 green = (0  ,255,40 )
 
+GAME_PAUSE = False
 WALKING_SPEED = 15
 FLOOR_LIST = [50,50,700,500]
 FLOOR_HIGHT = FLOOR_LIST[3]
@@ -40,19 +47,30 @@ class Lead:
 	x_predict = 0
 	y_predict = 0
 	health = 100
-	weapon = 'Sword'
-	damage = 10
-	weapon_width = 25
-	weapon_hight = 5
-	weapon_enabled = True
+	bag_weapons = [['Sword', 10, 25, 5] ]
 	
+	weapon = bag_weapons[0][0]
+	damage = bag_weapons[0][1]
+	weapon_width = bag_weapons[0][2]
+	weapon_hight = bag_weapons[0][3]
+	weapon_enabled = False
+	
+	
+	def addWeapon(atributes):
+		bag_weapons.append(atributes)
 '''
 	This is the Class that had to be created for Lead, instead
 	of pushing around his location to every function, this lets
 	him be an object that can be changed by methods globaly and
 	let us expand the data associated width him esially
 '''
-
+class Create_Sprite(pygame.sprite.Sprite):
+	def __init__(self, image_file, location):
+	        pygame.sprite.Sprite.__init__(self)  #call Sprite initializer
+		self.image = pygame.image.load(image_file)
+		self.rect = self.image.get_rect()
+		print self.rect
+		self.rect.left, self.rect.top = location
 
 class Create_Room_Sprite(pygame.sprite.Sprite):
 	def __init__(self, image_file, location):
@@ -60,13 +78,13 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 		self.image = pygame.image.load(image_file)
 		self.rect = self.image.get_rect()
 		self.rect.left, self.rect.top = location
-		self.doors = []
+		self.stairs = []
 		self.links = []
 		self.enemies = []
 		self.enemyType = []
 	def addStairs(self, doorPositions, link):
 		if link != False:
-			self.doors.append(doorPositions)
+			self.stairs.append(doorPositions)
 			self.links.append(link)
     	def addEnemy(self, enemyPositions, kind):
 		self.enemies.append(enemyPositions)	
@@ -83,13 +101,13 @@ class Create_Room_Sprite(pygame.sprite.Sprite):
 	there is a function in this class that adds a new set of stairs to the
 	room class, this is not working however and needs to be addressed,
 	the function is called by currnetRoom.addStairs([array of door pos], room link)
-	the array or doors pos is given in [x,y,width,hight]
+	the array or stairs pos is given in [x,y,width,hight]
 	len()
 
 '''
 def roomChange(lead, current_Room):
-	for i in range(0, len(current_Room.doors)):
-		if lead.x >= current_Room.doors[i][0] and lead.x <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y >= current_Room.doors[i][1] and lead.y <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
+	for i in range(0, len(current_Room.stairs)):
+		if lead.x >= current_Room.stairs[i][0] and lead.x <= (current_Room.stairs[i][0] + current_Room.stairs[i][2]) and lead.y >= current_Room.stairs[i][1] and lead.y <= (current_Room.stairs[i][1] + current_Room.stairs[i][2]):
 			lead.x = 300
 			lead.y = 300
 			return current_Room.links[i]
@@ -126,7 +144,7 @@ def enemyCollision(lead, current_Room):
 	the player can use all of them.
 '''
 
-def drawRoom(current_Room, lead):
+def drawRoom(current_Room, lead, Stairs_Sprite):
 	gameDisplay.fill(white)
 	if current_Room == RoomEnd:
 		gameDisplay.blit(current_Room.image, current_Room.rect)
@@ -135,8 +153,10 @@ def drawRoom(current_Room, lead):
 	gameDisplay.blit(current_Room.image, current_Room.rect)
 	pygame.draw.rect(gameDisplay, tan, FLOOR_LIST)
 	pygame.draw.rect(gameDisplay, red, [20,20, lead.health, 15])
-	for x in range(0, len(current_Room.doors)):
-		pygame.draw.rect(gameDisplay, black, current_Room.doors[x])
+	
+	for x in range(0, len(current_Room.stairs)):
+		gameDisplay.blit(Stairs_Sprite.image, current_Room.stairs[x])
+		
 	drawEnemy(current_Room)
 	
 '''
@@ -162,8 +182,8 @@ def drawEnemy(current_Room):
 def wallCollision(lead):
 	lead.x_predict = lead.x + lead.x_change
 	lead.y_predict = lead.y + lead.y_change
-	for i in range(0, len(current_Room.doors)):
-		if lead.x_predict >= current_Room.doors[i][0] and lead.x_predict <= (current_Room.doors[i][0] + current_Room.doors[i][2]) and lead.y_predict >= current_Room.doors[i][1] and lead.y_predict <= (current_Room.doors[i][1] + current_Room.doors[i][2]):
+	for i in range(0, len(current_Room.stairs)):
+		if lead.x_predict >= current_Room.stairs[i][0] and lead.x_predict <= (current_Room.stairs[i][0] + current_Room.stairs[i][2]) and lead.y_predict >= current_Room.stairs[i][1] and lead.y_predict <= (current_Room.stairs[i][1] + current_Room.stairs[i][2]):
 			return 0
 	if (lead.x_predict >= (FLOOR_WITH + WALL_BUFFER - CHAR_BUFFER) or lead.x_predict <= (WALL_BUFFER + CHAR_BUFFER)) and (lead.y_predict >= (FLOOR_HIGHT + WALL_BUFFER - CHAR_BUFFER) or lead.y_predict <= (WALL_BUFFER + CHAR_BUFFER)):
 		return 1
@@ -178,7 +198,7 @@ def wallCollision(lead):
 	changed to adapt to exempt hitting the wall if a door was placed on that
 	wall, also a lead.x and y predicted was added to look ahead a frame without
 	adding lead_change to the movement yet.
-	the for loop is added to check all of the doors in the room.
+	the for loop is added to check all of the stairs in the room.
 '''
 def dispWeaponText(lead):
 	WeaponText = GuiFont.render(' Weapon : ' + lead.weapon + ' ' , True,red, tan)
@@ -192,13 +212,15 @@ pygame.display.set_caption('pygamegame')
 gameExit = False
 
 lead = Lead
+Stairs_Sprite = Create_Sprite('stairs.jpg',[0,0])
+Bag_Sprite = Create_Sprite('bag.jpg', [100,100])
 RoomEnd    = Create_Room_Sprite('wall16-800.jpg',[0,0])
 Room2_Wall = Create_Room_Sprite('green_crazy_circle-800x600.jpg', [0,0])
 Room1_Wall = Create_Room_Sprite('background_image.jpg', [0,0])
 Room1_Wall.addStairs([500,200,60,60], Room2_Wall)
 RoomEnd.addStairs([250,100,60,60],Room1_Wall)
-Room2_Wall.addStairs([0,450,50,70], RoomEnd)
-Room2_Wall.addStairs([400,450,60,60], RoomEnd)
+Room2_Wall.addStairs([20,450,60,60], RoomEnd)
+Room2_Wall.addStairs([400,450,60,60], Room1_Wall)
 Room1_Wall.addEnemy([200,200], [white, 1, 30,50])
 
 '''	This is just a test image that is passed to the class
@@ -207,6 +229,7 @@ Room1_Wall.addEnemy([200,200], [white, 1, 30,50])
 	syntax:
 	Create_Room_Sprite('link to image' [0,0], [x,y,width,hight] for stairs, what room stairs lead)
 	addStairs([x,y,width,hight],link to room object)
+	Create_Sprite('link to image' [pos on display x, y])
 '''
 EndgameFont = pygame.font.SysFont('monospace',40) #SysFont creates a font object from pygame font objects
 EndgameText = EndgameFont.render('Game Over!', True, black, tan)
@@ -230,12 +253,13 @@ movRight = False
 movUp = False
 movDown = False
 collide = False
+bag_open = False
 
 clock = pygame.time.Clock()
 current_Room = Room1_Wall
 
 while not gameExit:
-	drawRoom(current_Room,lead)
+	drawRoom(current_Room,lead, Stairs_Sprite)
 	for event in pygame.event.get():
 		
 		if event.type == pygame.QUIT:
@@ -254,7 +278,16 @@ while not gameExit:
 				movDown = True
 				lead.y_change = WALKING_SPEED
 			if event.key == pygame.K_SPACE:
-				lead.weapon_enable = True
+				lead.weapon_enabled = True
+			if event.key == pygame.K_i:
+				if GAME_PAUSE == False:
+					GAME_PAUSE = True
+					bag_open = True
+				elif GAME_PAUSE == True:
+					GAME_PAUSE = False
+					bag_open = False
+				
+
 
 		if event.type == pygame.KEYUP:
 			if event.key == pygame.K_LEFT:
@@ -281,27 +314,32 @@ while not gameExit:
 				if movUp == True:
 					lead.y_change = -WALKING_SPEED
 			if event.key == pygame.K_SPACE:
-				lead.weapon_enable = False
+				lead.weapon_enabled = False
+				
 
-	dispWeaponText(lead)
-	gameDisplay.blit(HealthText, HealthTextObject)
-	collide = wallCollision(lead)
-	current_Room = roomChange(lead, current_Room)
-	current_Room = enemyCollision(lead, current_Room)
-	
-	if collide == 0:
-		lead.x += lead.x_change
-		lead.y += lead.y_change
-		drawLead(lead)
-	if collide == 1:
-		drawLead(lead)
-    	if collide == 2:
-        	lead.y += lead.y_change
-        	drawLead(lead)
-    	if collide == 3:
-        	lead.x += lead.x_change
-        	drawLead(lead)
-
+	if GAME_PAUSE == False:
+		dispWeaponText(lead)
+		gameDisplay.blit(HealthText, HealthTextObject)
+		collide = wallCollision(lead)
+		current_Room = roomChange(lead, current_Room)
+		current_Room = enemyCollision(lead, current_Room)
+			
+		if collide == 0:
+			lead.x += lead.x_change
+			lead.y += lead.y_change
+			drawLead(lead)
+		if collide == 1:
+			drawLead(lead)
+	    	if collide == 2:
+	        	lead.y += lead.y_change
+	        	drawLead(lead)
+	    	if collide == 3:
+	        	lead.x += lead.x_change
+	        	drawLead(lead)
+	if bag_open == True:
+		gameDisplay.blit(current_Room.image, current_Room.rect)
+		gameDisplay.blit(Bag_Sprite.image, Bag_Sprite.rect)
+		
 	
 	pygame.display.update()
 	clock.tick(30)
